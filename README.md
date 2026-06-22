@@ -81,13 +81,18 @@ Here is a quick map of the project files to help you navigate:
         
         sudo apt update && sudo apt install terraform
         ```
+    *   **🪟 Windows Users (Easiest Method):** If you download the raw `.zip` from the website, extract `terraform.exe` and place it directly inside the `terraform/` folder of this project. When executing Terraform commands, use `./terraform.exe` instead of `terraform`.
 
 **0.1.3 Verification:**
 To verify that all tools are successfully installed, run the following commands in your terminal:
 ```bash
 docker --version
 gcloud --version
+# Mac/WSL
 terraform --version
+
+# Windows
+./terraform.exe --version
 conda --version
 ```
 If the software is installed correctly, these commands will output the currently installed version numbers.
@@ -126,8 +131,10 @@ An event-driven architecture using a Message Broker.
 ### 🏗️ 1.3 Architecture Flow
 
 ![Architecture Diagram Local](images/architecture_local.jpeg)
+Architecture flow for local deployment. Apache Kafka is deployed via Docker, and the XGBoost model inference is executed continuously by a local Python consumer script (consumer_local.py).
 
 ![Architecture Diagram Cloud](images/architecture_cloud.png)
+Architecture flow for cloud deployment. Kafka is replaced by Google Cloud Pub/Sub, and the XGBoost model inference is deployed as a serverless Google Cloud Run Function.
 
 ---
 
@@ -146,9 +153,19 @@ docker-compose up -d
 💡 **Tip:**
 Ensure you have Docker installed and running on your system before proceeding. You can download it from [Docker's official website](https://www.docker.com/products/docker-desktop).
 
-![alt text](images/docker_running.png)
+![alt text](images/docker_running_mac_wsl.png)
+
+Ensure Docker Desktop is running in Mac environment.
+
+![alt text](images/docker_running_windows.png)
+
+Ensure Docker Desktop is running in Windows/WSL environment.
+
+![alt text](images/windows_desktop_settings_resources_wsl_integration.png)
+Additional check for WSL users: Make sure the **Enabled integration with my default WSL distro** setting in Settings/Resources/WSL Integration page is checked and the Ubuntu distribution is enabled.
 
 ![alt text](images/docker-compose-up-kafka.png)
+Run `docker-compose` to start the Kafka broker.
 
 ---
 
@@ -172,6 +189,7 @@ Please wait for 1 to 2 minutes for this command to complete. This will generate 
 The very first time you run this script, it might take a moment to download the `fraud_model.joblib` artifact from Kafka.
 
 ![alt text](images/train_model.png)
+After training, you will find the model file (fraud_model.joblib) in the current project folder.
 
 ---
 
@@ -182,12 +200,13 @@ The very first time you run this script, it might take a moment to download the 
 You will need **three separate terminal windows** for this step to see the full architecture in action.
 
 #### 🖥️ Terminal 1 (The Consumer - Local):
-This script listens to the Kafka topic. It will sit idle until transactions arrive, at which point it runs them through the XGBoost model instantly.
+This script listens to the Kafka **transactions** topic. It will sit idle until transactions arrive, at which point it runs them through the XGBoost model instantly.
 ```bash
 python scripts/consumer_local.py
 ```
 
 ![alt text](images/consumer_local.png)
+This terminal will monitor any new messages in the Kafka **transactions** topic. It will also print any messages being consumed and predicted label of the transaction.
 
 #### 🛒 Terminal 2 (The Point of Sale Terminal - Local):
 This acts as the merchant's credit card machine. It will pump transactions into Kafka.
@@ -198,6 +217,7 @@ streamlit run scripts/pos_terminal_local.py
 ![alt text](images/pos_terminal_local_terminal_8501.png)
 
 ![alt text](images/pos_terminal_local_streamlit_8501.png)
+The Streamlit application is now accessible in the browser via (http://localhost:8501). It simulates a merchant's credit card terminal, allowing you to generate and submit transactions for real-time fraud scoring.
 
 💡 **Tip:**
 Multi-Store Simulation: Streamlit's default port is 8501. You can simulate multiple different stores simultaneously by opening new terminal windows and running the POS Terminal on different ports! When running multiple Streamlit terminals, it is best practice to just increment sequentially from the default: 8501, 8502, 8503, 8504, etc.
@@ -209,6 +229,7 @@ streamlit run scripts/pos_terminal_local.py --server.port 8502
 ![alt text](images/pos_terminal_local_terminal_8502.png)
 
 ![alt text](images/pos_terminal_local_streamlit_8502.png)
+The second Streamlit application is now accessible in the browser via (http://localhost:8502).
 
 📝 **Note:**
 If you run this Streamlit POS terminal on a completely **different** computer than the one hosting your Docker Kafka broker, you will need to open your `.env` file and replace `KAFKA_BROKER="localhost:9092"` with the central computer's IP address (e.g., `KAFKA_BROKER="192.168.1.15:9092"`).
@@ -226,10 +247,13 @@ Once running, open your browser to **http://localhost:8000** for the dashboard, 
 ![alt text](images/fraud_detection_dashboard_localhost_8000.png)
 
 ![alt text](images/pos_terminal_local_streamlit_8501_start.png)
+In the Streamlit application, click the "Start Transactions" button to start generating transactions.
 
 ![alt text](images/fraud_detection_dashboard_localhost_8000_auto.png)
+In the Fraud Detection Dashboard, you will see that the transactions are being processed in real-time and automatically flagged as WHITELISTED OR FREEZE ACCOUNT.
 
 ![alt text](images/fraud_detection_dashboard_localhost_8000_manual.png)
+You can also manually flag transactions as WHITELISTED OR FREEZE ACCOUNT if you disagree with the model prediction by clicking the **Override & Whitelist** or **Freeze Account** button.
 
 ### 🛑 2.4 Stop Local Pipeline (Crossing over to Cloud)
 
@@ -273,6 +297,7 @@ Open `.env` (with TextEdit, Notepad, VS Code, or any text editor) and update `GC
 ![alt text](images/copy_env_example_terminal.png)
 
 ![alt text](images/nano_env.png)
+Save the changes made. For nano in Mac, press `Ctrl-X` followed by `Y` key and then `Enter` key.
 
 Next, navigate to the `terraform` directory and copy the example variables file:
 ```bash
@@ -288,8 +313,7 @@ Open `terraform.tfvars` (with TextEdit, Notepad, VS Code, or any text editor) an
 ![alt text](images/nano_terraform_tfvars_terminal.png)
 
 ![alt text](images/nano_terraform_tfvars.png)
-
-Save the changes made.
+Save the changes made. For nano in Mac, press `Ctrl-X` followed by `Y` key and then `Enter` key.
 
 ### 🚀 3.3 Deploy the Infrastructure
 
@@ -305,39 +329,51 @@ gcloud config set project <YOUR_GCP_PROJECT_ID>
 gcloud auth application-default login
 ```
 ![alt text](images/gcloud_auth_login_terminal.png)
-`gcloud auth login`
+Running the `gcloud auth login` will open a browser window to authenticate your terminal with Google Cloud. This is to let you use gcloud CLI commands to access resources in Google Cloud.
 
 ![alt text](images/gcloud_config_set_project_terminal.png)
-`gcloud config set project <YOUR_GCP_PROJECT_ID>`
+Running the `gcloud config set project <YOUR_GCP_PROJECT_ID>` will set the project you want to use when accessing Google Cloud.
 
 ![alt text](images/gcloud_auth_application_default_login_terminal.png)
-`gcloud auth application-default login`
+Running the `gcloud auth application-default login` will authenticate Terraform to use your Google Cloud credentials.
 
 Next, ensure the required Google Cloud APIs are enabled for your project. Run this command and wait 1-2 minutes for it to complete:
 ```bash
 gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com run.googleapis.com artifactregistry.googleapis.com pubsub.googleapis.com eventarc.googleapis.com
 ```
 
+📝 **Note:**
+Not all APIs may be enabled by default in your GCP project for security and billing reasons, so you may need to enable them first.
+
 ![alt text](images/gcloud_enable_api_terminal.png)
 
 Run the following commands to provision the required resources (such as Pub/Sub topic, Cloud Run Function, etc) in GCP:
 ```bash
+# Mac/WSL
 terraform init
+
+# Windows
+./terraform.exe init
 ```
 
 ![alt text](images/terraform_init_terminal.png)
 
 ```bash
+# Mac/WSL
 terraform apply
+
+# Windows
+./terraform.exe apply
 ```
 
 ![alt text](images/terraform_apply_1_terminal.png)
-
-Review the output of `terraform apply` and type `yes` and then `Enter`s to deploy!
+The output of the `terraform apply` command is very long. This is just the first portion of it.
 
 ![alt text](images/terraform_apply_2_terminal.png)
+Review the output of `terraform apply` and type `yes` and then `Enter` to deploy!
 
 ![alt text](images/terraform_apply_3_terminal.png)
+The last line (green colour texts) of the output of the `terraform apply` command tells you the status of the deployment: there are 12 resources deployed to GCP using terraform.
 
 ### 🚀 3.4 Launch the POS Terminal & Cloud Dashboard
 
@@ -357,6 +393,7 @@ streamlit run scripts/pos_terminal_cloud.py
 ![alt text](images/pos_terminal_cloud_terminal_8501.png)
 
 ![alt text](images/pos_terminal_cloud_streamlit_8501.png)
+Remember to click the **Start Transactions** button to start the event streaming.
 
 💡 **Tip:**
 Multi-Store Simulation: You can simulate multiple different stores simultaneously by opening new terminal windows and running the POS on different ports!
@@ -376,12 +413,16 @@ uvicorn scripts.api_cloud:app --host 0.0.0.0 --reload
 ![alt text](images/uvicorn_cloud_localhost_8000.png)
 
 ![alt text](images/fraud_detection_dashboard_cloud_localhost_8000_auto.png)
-
 Fraud Detection Dashboard running in Auto-Mode. Transactions are auto-flagged as **FROZEN ACCOUNT** if the ML Confidence score is at least 70% (Default threshold set in the Dashboard Auto-Mode Settings).
 
 ![alt text](images/fraud_detection_dashboard_cloud_localhost_8000_manual.png)
-
 Fraud Detection Dashboard running in Manual-Mode. Transactions have to be manually investigated if the ML Model prediction is not confident (less than 70%).
+
+![alt text](images/fraud_detection_dashboard_cloud_localhost_8000_analytics.png)
+Click the **Analytics** button in the left-hand menu to view the analytics and insights: which tells us how much time is taken from the time the transaction event is generated at POS terminal to when it is either approved or declined by the fraud detection system.
+
+![alt text](images/fraud_detection_dashboard_cloud_localhost_8000_auto_settings.png)
+Click the **Auto-Mode Settings** in the left-hand menu to set the threshold for the ML model confidence score. Fraud Detection Dashboard running in Auto-Mode will automatically flag the transaction as **FROZEN ACCOUNT** if the ML model confidence score is greater than or equal to the threshold (currently set to 70%). Otherwise, the transaction is auto-flagged as **WHITELISTED**.
 
 ⚠️ **Important:**
 Where is the Cloud Consumer Script?
@@ -415,7 +456,9 @@ To expand this into a structured exercise across a larger team, refer to Section
 
    ![MacOS ipconfig](images/macos_ipconfig.png)
 
-   - **Windows:** Open the **Command Prompt** and type `ipconfig`. Look for the "IPv4 Address" under your active Wi-Fi connection.
+   - **Windows:** Open the **Command Prompt** terminal and type `ipconfig`. Look for the "IPv4 Address" under your active Wi-Fi connection.
+
+   ![alt text](images/windows_ipconfig_ipv4.png)
 
 2. **Start the Central Web Server (FastAPI):**
    Start your FastAPI web server just like before, but this time we will add `--host 0.0.0.0` to the command. This special flag tells your computer to "open the doors" and allow incoming connections from your local network.
@@ -457,7 +500,11 @@ docker-compose down
 ```bash
 cd terraform
 
+# Mac/WSL
 terraform destroy
+
+# Windows
+./terraform.exe destroy
 ```
 
 ![alt text](images/terraform_destroy_1_terminal.png)

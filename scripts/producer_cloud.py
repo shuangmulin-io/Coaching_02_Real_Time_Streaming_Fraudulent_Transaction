@@ -15,7 +15,7 @@ from google.cloud import pubsub_v1
 
 publisher = pubsub_v1.PublisherClient()
 project_id = os.environ.get("GCP_PROJECT_ID", "YOUR-PROJECT-ID")
-topic_path = publisher.topic_path(project_id, "fraud-transactions-topic")
+topic_path = publisher.topic_path(project_id, "transactions")
 
 
 print("Loading Kaggle Test dataset...")

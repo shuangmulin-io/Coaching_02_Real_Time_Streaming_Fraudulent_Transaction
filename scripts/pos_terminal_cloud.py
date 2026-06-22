@@ -61,7 +61,7 @@ with st.sidebar:
     terminal_id = st.text_input("POS Terminal ID", value=st.session_state.default_terminal_id)
     st.markdown("---")
     st.sidebar.button("🚀 Start Transactions", width="stretch", disabled=st.session_state.run_stream, on_click=start_stream)
-    st.sidebar.button("🛑 Stop Transactions", width="stretch", disabled=not st.session_state.run_stream, on_click=stop_stream)
+    st.sidebar.button("❌ Stop Transactions", width="stretch", disabled=not st.session_state.run_stream, on_click=stop_stream)
 
 # Load data
 @st.cache_data
@@ -149,7 +149,7 @@ render_ui(st.session_state.render_key)
 def get_pubsub_clients(proj_id):
     from google.cloud import pubsub_v1
     publisher = pubsub_v1.PublisherClient()
-    topic_path = publisher.topic_path(proj_id, "fraud-transactions-topic")
+    topic_path = publisher.topic_path(proj_id, "transactions")
     
     subscriber = pubsub_v1.SubscriberClient()
     alert_sub_path = subscriber.subscription_path(proj_id, "fraud-alerts-pos-sub")
@@ -241,9 +241,9 @@ while True:
                     user_str = res.get('user', 'Unknown')
                     amt_str = f"${alert['amt']:.2f}"
                     if res['action_type'] == 'whitelist':
-                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'✅ WHITELISTED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
+                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'🟢 APPROVED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
                     elif res['action_type'] == 'freeze':
-                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'🛑 FROZEN by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
+                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'❌ DECLINED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
     except Exception:
         pass # Timeout or empty
         
@@ -269,9 +269,9 @@ while True:
                     term_str = alert_info['terminal']
                     merch_str = alert_info['merchant']
                     if res['action_type'] == 'whitelist':
-                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'✅ WHITELISTED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
+                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'🟢 APPROVED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
                     elif res['action_type'] == 'freeze':
-                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'🛑 FROZEN by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
+                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'❌ DECLINED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
             subscriber.acknowledge(request={"subscription": resolution_sub_path, "ack_ids": [msg.ack_id]})
     except Exception:
         pass

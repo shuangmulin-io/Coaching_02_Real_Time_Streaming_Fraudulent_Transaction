@@ -59,7 +59,7 @@ with st.sidebar:
     terminal_id = st.text_input("POS Terminal ID", value=st.session_state.default_terminal_id)
     st.markdown("---")
     st.sidebar.button("🚀 Start Transactions", width="stretch", disabled=st.session_state.run_stream, on_click=start_stream)
-    st.sidebar.button("🛑 Stop Transactions", width="stretch", disabled=not st.session_state.run_stream, on_click=stop_stream)
+    st.sidebar.button("❌ Stop Transactions", width="stretch", disabled=not st.session_state.run_stream, on_click=stop_stream)
 
 # Load data
 @st.cache_data
@@ -243,9 +243,9 @@ while True:
                     user_str = res.get('user', 'Unknown')
                     amt_str = f"${alert['amt']:.2f}"
                     if res['action_type'] == 'whitelist':
-                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'✅ WHITELISTED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': alert['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
+                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'🟢 APPROVED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': alert['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
                     elif res['action_type'] == 'freeze':
-                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'🛑 FROZEN by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': alert['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
+                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'❌ DECLINED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': alert['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
 
     # Check for any bank resolutions
     if resolution_consumer:
@@ -269,9 +269,9 @@ while True:
                     term_str = alert_info['terminal']
                     merch_str = alert_info['merchant']
                     if res['action_type'] == 'whitelist':
-                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'✅ WHITELISTED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
+                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'🟢 APPROVED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
                     elif res['action_type'] == 'freeze':
-                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'🛑 FROZEN by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
+                        alerts_history.append({'ID': st.session_state.alert_counter, 'Status': f'❌ DECLINED by {user_str}', 'Terminal': term_str, 'Merchant': merch_str, 'Card End': res['trans_num'][-4:], 'Amount': amt_str, 'Time': time.strftime("%H:%M:%S")})
 
     # Keep only last 1000 alerts for performance
     if len(alerts_history) > 1000:

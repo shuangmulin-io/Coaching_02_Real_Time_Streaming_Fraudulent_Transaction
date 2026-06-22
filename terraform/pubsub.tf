@@ -1,5 +1,5 @@
 resource "google_pubsub_topic" "fraud_transactions" {
-  name = "fraud-transactions-topic"
+  name = "transactions"
   
   labels = {
     environment = "coaching-session"
@@ -7,7 +7,7 @@ resource "google_pubsub_topic" "fraud_transactions" {
 }
 
 resource "google_pubsub_topic" "fraud_alerts" {
-  name = "fraud-alerts-topic"
+  name = "fraud_alerts"
   
   labels = {
     environment = "coaching-session"
@@ -15,7 +15,7 @@ resource "google_pubsub_topic" "fraud_alerts" {
 }
 
 resource "google_pubsub_topic" "fraud_resolutions" {
-  name = "fraud-resolutions-topic"
+  name = "fraud_resolutions"
   
   labels = {
     environment = "coaching-session"

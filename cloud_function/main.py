@@ -11,7 +11,7 @@ from datetime import datetime
 # Initialize Pub/Sub Publisher globally
 publisher = pubsub_v1.PublisherClient()
 project_id = os.environ.get("GCP_PROJECT_ID", "YOUR-PROJECT-ID")
-alert_topic_path = publisher.topic_path(project_id, "fraud-alerts-topic")
+alert_topic_path = publisher.topic_path(project_id, "fraud_alerts")
 
 # Load the model globally so it persists across warm function invocations
 print("Loading XGBoost Model...")

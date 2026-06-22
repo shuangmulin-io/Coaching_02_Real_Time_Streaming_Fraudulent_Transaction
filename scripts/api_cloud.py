@@ -28,7 +28,7 @@ topic_path = None
 
 try:
     publisher = pubsub_v1.PublisherClient()
-    topic_path = publisher.topic_path(project_id, "fraud-resolutions-topic")
+    topic_path = publisher.topic_path(project_id, "fraud_resolutions")
 except Exception as e:
     print("Failed to initialize Pub/Sub Publisher:", e)
 
@@ -51,7 +51,7 @@ async def process_action(req: ActionRequest, request: Request):
     if not user_identity:
         user_identity = request.client.host
 
-    # Publish to fraud-resolutions-topic for POS terminal to read
+    # Publish to fraud_resolutions for POS terminal to read
     if publisher and topic_path:
         publisher.publish(topic_path, json.dumps({'trans_num': req.trans_num, 'action_type': req.action_type, 'user': user_identity}).encode('utf-8'))
         
