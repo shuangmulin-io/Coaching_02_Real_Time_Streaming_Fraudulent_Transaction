@@ -208,7 +208,17 @@ python scripts/consumer_local.py
 ![alt text](images/consumer_local.png)
 This terminal will monitor any new messages in the Kafka **transactions** topic. It will also print any messages being consumed and predicted label of the transaction.
 
-#### 🛒 Terminal 2 (The Point of Sale Terminal - Local):
+#### 🏦 Terminal 2 (The Bank's Modern Fraud Detection Dashboard - Local):
+This is the FastAPI backend and web dashboard for the Fraud Analysts. It listens for alerts and serves a beautiful User Interface.
+```bash
+uvicorn scripts.api_local:app --host 0.0.0.0 --reload
+```
+
+![alt text](images/uvicorn_local_localhost_8000.png)
+
+Once running, open your browser to **http://localhost:8000** for the dashboard, and keep it visible on your screen. It will say "Listening for Fraud Alerts".
+
+#### 🛒 Terminal 3 (The Point of Sale Terminal - Local):
 This acts as the merchant's credit card machine. It will pump transactions into Kafka.
 ```bash
 streamlit run scripts/pos_terminal_local.py
@@ -217,7 +227,7 @@ streamlit run scripts/pos_terminal_local.py
 ![alt text](images/pos_terminal_local_terminal_8501.png)
 
 ![alt text](images/pos_terminal_local_streamlit_8501.png)
-The Streamlit application is now accessible in the browser via (http://localhost:8501). It simulates a merchant's credit card terminal, allowing you to generate and submit transactions for real-time fraud scoring.
+The Streamlit application is now accessible in the browser via (http://localhost:8501). Arrange it side-by-side with your Dashboard. Click **"Start Transactions"** on the POS Terminal, and watch the fraud alerts flow into the web dashboard in real-time!
 
 💡 **Tip:**
 Multi-Store Simulation: Streamlit's default port is 8501. You can simulate multiple different stores simultaneously by opening new terminal windows and running the POS Terminal on different ports! When running multiple Streamlit terminals, it is best practice to just increment sequentially from the default: 8501, 8502, 8503, 8504, etc.
@@ -231,18 +241,11 @@ streamlit run scripts/pos_terminal_local.py --server.port 8502
 ![alt text](images/pos_terminal_local_streamlit_8502.png)
 The second Streamlit application is now accessible in the browser via (http://localhost:8502).
 
-📝 **Note:**
-If you run this Streamlit POS terminal on a completely **different** computer than the one hosting your Docker Kafka broker, you will need to open your `.env` file and replace `KAFKA_BROKER="localhost:9092"` with the central computer's IP address (e.g., `KAFKA_BROKER="192.168.1.15:9092"`).
-
-#### 🏦 Terminal 3 (The Bank's Modern Fraud Detection Dashboard - Local):
-This is the FastAPI backend and web dashboard for the Fraud Analysts. It listens for alerts and serves a beautiful User Interface.
-```bash
-uvicorn scripts.api_local:app --host 0.0.0.0 --reload
-```
-
-![alt text](images/uvicorn_local_localhost_8000.png)
-
-Once running, open your browser to **http://localhost:8000** for the dashboard, and arrange it side-by-side with your POS Terminal. Click **"Start Transactions"** on the POS Terminal, and watch the fraud alerts flow into the web dashboard in real-time!
+📝 **Note for Team Simulations (Multiple Laptops):**
+If you are doing the team simulation on different computers, your scripts need to know how to find the central Data Engineer's laptop!
+1. Open your `.env` file.
+2. Change `KAFKA_BROKER="localhost:9092"` to use the Data Engineer's IP address (for example: `KAFKA_BROKER="192.168.1.15:9092"`).
+(Data Engineers: Remember to update your `docker-compose.yml` file with your IP address before starting Kafka, as outlined in the SIMULATION.md guide!)
 
 ![alt text](images/fraud_detection_dashboard_localhost_8000.png)
 
@@ -385,7 +388,16 @@ Ensure you have already pressed `Ctrl+C` (or `Control+C` on Mac) in your termina
 
 Because we set up the `.env` file earlier, our scripts will automatically load your `GCP_PROJECT_ID`. You will only need **two terminal windows** for this stage. Just start the cloud-native interfaces:
 
-#### 🛒 Terminal 1 (The Point of Sale Terminal - Cloud):
+#### 🏦 Terminal 1 (The Bank's Modern Fraud Detection Dashboard - Cloud):
+```bash
+uvicorn scripts.api_cloud:app --host 0.0.0.0 --reload
+```
+
+![alt text](images/uvicorn_cloud_localhost_8000.png)
+
+Once running, open your browser to **http://localhost:8000** for the dashboard, and keep it visible on your screen.
+
+#### 🛒 Terminal 2 (The Point of Sale Terminal - Cloud):
 ```bash
 streamlit run scripts/pos_terminal_cloud.py
 ```
@@ -404,13 +416,6 @@ streamlit run scripts/pos_terminal_cloud.py --server.port 8502
 ![alt text](images/pos_terminal_cloud_terminal_8502.png)
 
 ![alt text](images/pos_terminal_cloud_streamlit_8502.png)
-
-#### 🏦 Terminal 2 (The Bank's Modern Fraud Detection Dashboard - Cloud):
-```bash
-uvicorn scripts.api_cloud:app --host 0.0.0.0 --reload
-```
-
-![alt text](images/uvicorn_cloud_localhost_8000.png)
 
 ![alt text](images/fraud_detection_dashboard_cloud_localhost_8000_auto.png)
 Fraud Detection Dashboard running in Auto-Mode. Transactions are auto-flagged as **FROZEN ACCOUNT** if the ML Confidence score is at least 70% (Default threshold set in the Dashboard Auto-Mode Settings).
