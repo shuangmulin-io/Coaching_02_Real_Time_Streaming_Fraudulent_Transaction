@@ -61,3 +61,13 @@ data/*.csv
 # Old Files
 backup_old/
 *.joblib
+
+# Terraform binaries
+terraform/terraform
+terraform/terraform.exe
+
+# Other common things to exclude
+.terraform/
+*.tfstate
+*.tfstate.backup
+terraform/.terraform.lock.hcl
